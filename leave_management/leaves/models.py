@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class LeaveRequest(models.Model):
     
     LEAVE_TYPE_CHOICES = (
-        ('CAUSAL',"Causal Leave"),
+        ('CASUAL',"Causal Leave"),
         ('SICK', "Sick Leave"),
         ('PAID',"Paid Leave")
     )
