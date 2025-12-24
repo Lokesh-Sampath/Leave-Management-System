@@ -26,3 +26,28 @@ class EmployeeLeaveAPI(APIView):
               
               return Response(serializer.data, status = status.HTTP_201_CREATED)
           return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+      
+      
+      
+class LeaveDetailedAPI(APIView):
+    
+    permission_classes = [IsAuthenticated, IsEmployee]
+    
+    def get(self, request,leave_id):
+        
+        try : 
+            leave = LeaveRequest.objects.get(id = leave_id)
+        except LeaveRequest.DoesNotExist:
+            return Response(
+                {"detail": "Leave not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        if leave.employee != request.user:
+            return Response(
+                {"detail" : "Not Allowed"},
+                status = status.HTTP_403_FORBIDDEN
+            )    
+              
+        serializer  = LeaveRequestSerializer(leave)
+        return Response(serializer.data)      
