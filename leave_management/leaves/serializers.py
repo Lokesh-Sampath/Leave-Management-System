@@ -19,3 +19,16 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
         return LeaveRequest.objects.create(**validated_data)
 
 
+class TeamLeaveSerializer(serializers.ModelSerializer):
+    employee = serializers.CharField(source='employee.username')
+    
+    class Meta:
+        model = LeaveRequest
+        fields = [
+            'id',
+            'employee',
+            'leave_type',
+            'start_date',
+            'end_date',
+            'status'
+        ]

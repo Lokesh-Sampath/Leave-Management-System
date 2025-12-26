@@ -1,11 +1,12 @@
 from django.shortcuts import render
-from rest_framework.permissions import IsAuthenticated 
+from rest_framework.permissions import IsAuthenticated
 from users.permissions import IsEmployee
 from rest_framework.views import APIView
 from .models import LeaveRequest
-from .serializers import LeaveRequestSerializer
+from .serializers import LeaveRequestSerializer, TeamLeaveSerializer
 from rest_framework.response import Response
 from rest_framework import status 
+from users.permissions import IsManager
 # Create your views here.
 
 class EmployeeLeaveAPI(APIView):
@@ -51,3 +52,24 @@ class LeaveDetailedAPI(APIView):
               
         serializer  = LeaveRequestSerializer(leave)
         return Response(serializer.data)      
+    
+    
+class TeamLeaveAPI(APIView):
+    
+    permission_classes = [IsAuthenticated,IsManager]  
+    
+    def get(self,request):
+        
+        team_profiles = request.user.team_members.all()  
+        team_users = [profile.user for profile in team_profiles]
+        
+        leaves = LeaveRequest.objects.filter(
+            employee__in = team_users,
+            status = 'PENDING'
+        )
+        
+        serializer = LeaveRequestSerializer(leaves, many=True)
+        
+        return Response(serializer.data)
+    
+    
