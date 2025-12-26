@@ -17,3 +17,5 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return LeaveRequest.objects.create(**validated_data)
+
+

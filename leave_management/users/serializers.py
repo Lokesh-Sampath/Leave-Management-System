@@ -18,3 +18,15 @@ class UserMeSerializer(serializers.ModelSerializer):
         if profile.manager:
             return profile.manager.username
         return None    
+    
+from rest_framework import serializers
+from .models import UserProfile
+
+class TeamMemberSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='user.id')
+    username = serializers.CharField(source='user.username')
+    email = serializers.EmailField(source='user.email')
+
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'username', 'email']
