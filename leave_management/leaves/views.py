@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from users.permissions import IsEmployee
 from rest_framework.views import APIView
 from .models import LeaveRequest
-from .serializers import LeaveRequestSerializer, TeamLeaveSerializer
+from .serializers import LeaveRequestSerializer, TeamLeaveSerializer, LeaveActionSerializer
 from rest_framework.response import Response
 from rest_framework import status 
 from users.permissions import IsManager
@@ -73,3 +73,54 @@ class TeamLeaveAPI(APIView):
         return Response(serializer.data)
     
     
+class LeaveActionAPI(APIView):
+    
+    permission_classes = [IsAuthenticated,IsManager]
+    
+    def patch(self, request, leave_id):
+        
+       try:
+           leave = LeaveRequest.objects.get(id = leave_id)    
+       except  LeaveRequest.DoesNotExist:
+               return Response(
+             {'details' : "User donsen't exist "},
+               status = status.HTTP_404_NOT_FOUND
+           )   
+               
+       if leave.employee.userprofile.manager != request.user:
+            return Response(
+                {'details' : "Yu are not authorized to act on this action"},
+                status= status.HTTP_403_FORBIDDEN
+            )
+            
+       if leave.status != 'PENDING':
+           return Response(
+               {'details':"The required act has been alreay took over"},
+               status = status.HTTP_400_BAD_REQUEST
+           ) 
+           
+           
+       serializer = LeaveActionSerializer(data = request.data)
+       serializer.is_valid(raise_exception = True)
+       
+       action = serializer.validated_data['action']
+       
+       if action == 'APPROVE':
+           leave.status = "APPROVED"
+           leave.aproved_by = request.user
+           leave.rejection_reason = None
+           
+       elif action == 'REJECT':
+           leave.status = 'REJECTED'
+           leave.approved_by = request.user
+           leave.rejection_reason = serializer.validated_data.get(
+                'rejection_reason', ''
+            )
+           
+       leave.save()   
+       
+       
+       return Response(
+           {'status':leave.status},
+           status = status.HTTP_200_OK
+                        )

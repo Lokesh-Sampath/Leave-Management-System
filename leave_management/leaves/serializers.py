@@ -32,3 +32,10 @@ class TeamLeaveSerializer(serializers.ModelSerializer):
             'end_date',
             'status'
         ]
+        
+class LeaveActionSerializer(serializers.Serializer):
+    
+    action  = serializers.ChoiceField(choices = ['APPROVE','REJECT'])   
+    rejection_reason = serializers.CharField(required=False, allow_blank=True) 
+    
+    
