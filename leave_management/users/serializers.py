@@ -30,3 +30,11 @@ class TeamMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ['id', 'username', 'email']
+
+
+class AdminUserListSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(source='userprofile.role')
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'role']
