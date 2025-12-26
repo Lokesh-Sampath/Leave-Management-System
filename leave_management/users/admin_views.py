@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
+from rest_framework import status
 
-# Create your views here.
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework.response import Response
-from users.serializers import UserMeSerializer, TeamMemberSerializer, AdminUserListSerializer, AdminCreateUserSerializer
+from users.serializers import UserMeSerializer, TeamMemberSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminUserUpdateSerializer
 from .permissions import IsManager, IsAdmin
 
 class AdminUserListAPI(APIView):
@@ -34,3 +34,31 @@ class AdminUserListAPI(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+        
+class AdminUserUpdateAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def patch(self, request, id):
+        try:
+            user = User.objects.get(id=id)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = AdminUserUpdateSerializer(
+            instance=user,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "User updated successfully"},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        

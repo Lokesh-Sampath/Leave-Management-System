@@ -72,7 +72,6 @@ class AdminCreateUserSerializer(serializers.Serializer):
      role = validated_data.pop('role')
      password = validated_data.pop('password')
 
-    # 1️⃣ Create User
      user = User.objects.create_user(
         password=password,
         **validated_data
@@ -90,3 +89,27 @@ class AdminCreateUserSerializer(serializers.Serializer):
 
      return user
         
+class AdminUserUpdateSerializer(serializers.Serializer):
+    role = serializers.ChoiceField(
+        choices=['EMPLOYEE', 'MANAGER'],
+        required=False
+    )
+    manager_id = serializers.IntegerField(required=False)
+
+    def update(self, instance, validated_data):
+    # Get or create profile safely
+     profile, created = UserProfile.objects.get_or_create(user=instance)
+
+     if 'role' in validated_data:
+        profile.role = validated_data['role']
+
+     if 'manager_id' in validated_data:
+        manager_id = validated_data['manager_id']
+
+        if manager_id is None:
+            profile.manager = None
+        else:
+            profile.manager = User.objects.get(id=manager_id)
+
+     profile.save()
+     return instance
