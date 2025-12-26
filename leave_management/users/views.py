@@ -25,10 +25,3 @@ class TeamMembersAPI(APIView):
         return Response(serializers.data)
     
     
-class AdminUserListAPI(APIView):
-    permission_classes = [IsAdmin]
-
-    def get(self, request):
-        users = User.objects.all()
-        serializer = AdminUserListSerializer(users, many=True)
-        return Response(serializer.data)    
