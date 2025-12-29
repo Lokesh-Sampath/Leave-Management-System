@@ -3,18 +3,23 @@ from .models import LeaveRequest, LeaveBalance
 from django.contrib.auth.models import User
 
 class LeaveRequestSerializer(serializers.ModelSerializer):
+    employee = serializers.CharField(
+        source="employee.username",
+        read_only=True
+    )
+
     class Meta:
         model = LeaveRequest
         fields = [
-            'id',
-            'leave_type',
-            'start_date',
-            'end_date',
-            'reason',
-            'status',
-            'created_at'
+            "id",
+            "employee",
+            "start_date",
+            "end_date",
+            "leave_type",
+            "status",
+            "created_at",
         ]
-        read_only_fields = ['id', 'status', 'created_at']
+
 
     def create(self, validated_data):
         return LeaveRequest.objects.create(**validated_data)

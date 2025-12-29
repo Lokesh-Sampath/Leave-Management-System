@@ -7,8 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.serializers import UserMeSerializer, TeamMemberSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminUserUpdateSerializer
 from .permissions import IsManager, IsAdmin
-from leaves.serializers import LeaveBalanceUpdateSerializer
-from leaves.models import LeaveBalance
+from leaves.serializers import LeaveBalanceUpdateSerializer, LeaveRequestSerializer
+from leaves.models import LeaveBalance, LeaveRequest
 
 class AdminUserListAPI(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
@@ -88,3 +88,12 @@ class LeaveBalanceUpdateAPI(APIView):
 
         return Response(serializer.data)
    
+   
+class AdminLeaveListAPI(APIView):
+    
+    permission_classes = [IsAuthenticated, IsAdmin]   
+    
+    def get(self,request):
+        leaves = LeaveRequest.objects.select_related("employee").all()
+        serializer = LeaveRequestSerializer(leaves, many=True)
+        return Response(serializer.data)
