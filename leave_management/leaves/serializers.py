@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import LeaveRequest
+from .models import LeaveRequest, LeaveBalance
+from django.contrib.auth.models import User
 
 class LeaveRequestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,3 +40,30 @@ class LeaveActionSerializer(serializers.Serializer):
     rejection_reason = serializers.CharField(required=False, allow_blank=True) 
     
     
+class LeaveBalanceCreateSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = LeaveBalance
+        fields = ["user_id", "total_leaves"]
+
+    def create(self, validated_data):
+        user_id = validated_data.pop("user_id")
+        total_leaves = validated_data["total_leaves"]
+
+        user = User.objects.get(id=user_id)
+
+        balance, created = LeaveBalance.objects.get_or_create(
+            user=user,
+            defaults={
+                "total_leaves": total_leaves,
+                "used_leaves": 0
+            }
+        )
+
+        if not created:
+            raise serializers.ValidationError(
+                "Leave balance already exists for this user."
+            )
+
+        return balance

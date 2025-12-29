@@ -1,6 +1,8 @@
 from django.db import models
-
+from rest_framework import serializers
 from django.contrib.auth.models import User
+
+
 
 
 class LeaveRequest(models.Model):
@@ -67,19 +69,24 @@ class LeaveRequest(models.Model):
 
 
 class LeaveBalance(models.Model):
-    
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name="leave_balance"
     )
-    
     total_leaves = models.IntegerField()
-    used_leaves = models.IntegerField()    
-    
+    used_leaves = models.IntegerField(default=0)
+
     def remaining_leave(self):
         return self.total_leaves - self.used_leaves
-    
+
     def __str__(self):
         return f"{self.user.username} - Remaining:{self.remaining_leave()}"
+
     
+
+
+            
+            
+    
+        

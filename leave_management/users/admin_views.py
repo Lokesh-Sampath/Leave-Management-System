@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.serializers import UserMeSerializer, TeamMemberSerializer, AdminUserListSerializer, AdminCreateUserSerializer, AdminUserUpdateSerializer
 from .permissions import IsManager, IsAdmin
+from leaves.serializers import LeaveBalanceCreateSerializer
 
 class AdminUserListAPI(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
@@ -61,4 +62,24 @@ class AdminUserUpdateAPIView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminLeaveBalanceAPI(APIView):
+    
+    permission_classes = [IsAdmin]
+    
+    def post(self, request):
+        serializer = LeaveBalanceCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        balance = serializer.save()
+
         
+        return Response(
+            {
+                "user_id": balance.user.id,
+                "total_leaves": balance.total_leaves,
+                "used_leaves": balance.used_leaves,
+                "remaining_leaves": balance.remaining_leave()
+            },
+            status = status.HTTP_201_CREATED
+        )    
