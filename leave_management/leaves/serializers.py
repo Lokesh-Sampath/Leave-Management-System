@@ -40,30 +40,15 @@ class LeaveActionSerializer(serializers.Serializer):
     rejection_reason = serializers.CharField(required=False, allow_blank=True) 
     
     
-class LeaveBalanceCreateSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField(write_only=True)
-
+class LeaveBalanceUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveBalance
-        fields = ["user_id", "total_leaves"]
+        fields = ["total_leaves", "used_leaves","remaining_leave"]
+        extra_kwargs = {
+            "total_leaves": {"required": False},
+            "used_leaves": {"required": False},
+        }
+        
+    def get_remaining_leave(self, obj):
+        return obj.remaining_leave()
 
-    def create(self, validated_data):
-        user_id = validated_data.pop("user_id")
-        total_leaves = validated_data["total_leaves"]
-
-        user = User.objects.get(id=user_id)
-
-        balance, created = LeaveBalance.objects.get_or_create(
-            user=user,
-            defaults={
-                "total_leaves": total_leaves,
-                "used_leaves": 0
-            }
-        )
-
-        if not created:
-            raise serializers.ValidationError(
-                "Leave balance already exists for this user."
-            )
-
-        return balance
